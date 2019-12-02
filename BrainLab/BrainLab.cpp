@@ -117,6 +117,24 @@ int main()
 
 	vector<Mat> difference = diff(histsWithYes, histsWithNo);
 
+	Mat testedImage = imread("yes/Y4.jpg");
+	Mat greyTested;
+	cvtColor(testedImage, greyTested, COLOR_BGR2GRAY);
+
+	vector<Mat> histsTested;
+	vector<Mat> testedBlocks = SplitImageToBlocks(greyTested, rowsCount, colsCount);
+	vector<Mat> testedHistograms = CalculateImagesHistograms(testedBlocks, histsTested);
+
+	int countNonZero = 0;
+	for (int i = 0; i < 4; i++) {
+		Mat out;
+		compare(histsTested[i], difference[i], out, CMP_GT);
+		std::cout << out << "\n\n";
+		countNonZero += cv::countNonZero(out);
+	}
+	std::cout << "Non zero" << countNonZero << "\n\n";
+
+	
 
 	if (showImageBlocks)
 	{
