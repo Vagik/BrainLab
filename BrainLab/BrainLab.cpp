@@ -1,5 +1,6 @@
-#include <opencv2/opencv.hpp>
 #include <iostream>
+#include <opencv2/opencv.hpp>
+
 
 using namespace std;
 using namespace cv;
@@ -12,7 +13,7 @@ void ShowAllImages(vector<Mat> images, string dialogTitle)
 	stringStream << " %i";
 	for (int i = 0; i < images.size(); i++)
 	{
-        imshow(format(stringStream.str().c_str(), i + 1), images[i]);
+		imshow(format(stringStream.str().c_str(), i + 1), images[i]);
 	}
 }
 
@@ -48,7 +49,7 @@ vector<Mat> SplitImageToBlocks(Mat sourceImage, int rowsCount, int colsCount)
 	return imageBlocks;
 }
 
-vector<Mat> CalculateImagesHistograms(vector<Mat> images)
+vector<Mat> CalculateImagesHistograms(vector<Mat> images, vector<Mat> &outHists)
 {
 	vector<Mat> histograms;
 
@@ -68,6 +69,8 @@ vector<Mat> CalculateImagesHistograms(vector<Mat> images)
 		Mat histImage(histHeight, histWidth, CV_8UC3, Scalar(0, 0, 0));
 		normalize(histogram, histogram, 0, histImage.rows, NORM_MINMAX, -1, Mat());
 
+		outHists.push_back(histogram);
+
 		for (int i = 1; i < histSize; i++)
 		{
 			line(histImage, Point(binWidth * (i - 1), histHeight - cvRound(histogram.at<float>(i - 1))),
@@ -79,32 +82,52 @@ vector<Mat> CalculateImagesHistograms(vector<Mat> images)
 	return histograms;
 }
 
+vector<Mat> diff(vector<Mat> histsWithYes, vector<Mat> histsWithNo) {
+	vector<Mat> result;
+	for (int i = 0; i < histsWithYes.size(); i++) {
+		Mat diff;
+		absdiff(histsWithNo[i], histsWithYes[i], diff);
+		result.push_back(diff);
+	}
+	return result;
+}
+
 int main()
 {
 	int rowsCount = 2;
 	int colsCount = 2;
-	Mat sourceImage = imread("Images/lena.jpg");
-	bool showImageBlocks = true;
-	bool showBlocksHistograms = true;
+	Mat sourceImage = imread("no/1 no.jpeg");
+	bool showImageBlocks = false;
+	bool showBlocksHistograms = false;
 
 
-	Mat greyImage;
-	cvtColor(sourceImage, greyImage, COLOR_BGR2GRAY);
+	Mat greyImageWithNo;
+	cvtColor(sourceImage, greyImageWithNo, COLOR_BGR2GRAY);
 
-	vector<Mat> imageBlocks = SplitImageToBlocks(greyImage, rowsCount, colsCount);
-	vector<Mat> histograms = CalculateImagesHistograms(imageBlocks);
-	
-	imshow("Source Image", sourceImage);
+	vector<Mat> histsWithNo;
+	vector<Mat> imageBlocksWithNo = SplitImageToBlocks(greyImageWithNo, rowsCount, colsCount);
+	vector<Mat> histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo, histsWithNo);
+
+	Mat withYes = imread("yes/Y1.jpg");
+	Mat geyImageWithYes;
+	cvtColor(withYes, geyImageWithYes, COLOR_BGR2GRAY);
+	vector<Mat> histsWithYes;
+	vector<Mat> imageBlocksWithYes = SplitImageToBlocks(geyImageWithYes, rowsCount, colsCount);
+	vector<Mat> histogramsWithYes = CalculateImagesHistograms(imageBlocksWithYes, histsWithYes);
+
+	vector<Mat> difference = diff(histsWithYes, histsWithNo);
 
 
 	if (showImageBlocks)
 	{
-		ShowAllImages(imageBlocks, "Image block");
+		imshow("Source Image", sourceImage);
+		ShowAllImages(imageBlocksWithNo, "Image block");
 	}
 	if (showBlocksHistograms)
 	{
-		ShowAllImages(histograms, "Histogram");
+		ShowAllImages(histogramsWithNo, "Histogram");
 	}
-	
+
 	waitKey(0);
 }
+
