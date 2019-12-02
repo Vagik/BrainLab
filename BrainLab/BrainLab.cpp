@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
-
+#include <string>
+#include <filesystem>
 
 using namespace std;
 using namespace cv;
@@ -145,7 +146,7 @@ int main()
 	{
 		ShowAllImages(histogramsWithNo, "Histogram");
 	}
-
+	
 	waitKey(0);
 }
 
