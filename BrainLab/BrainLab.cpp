@@ -1,10 +1,18 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <iterator>
 
 using namespace std;
 using namespace cv;
+
+
+string noImagesFolder = "Images/no/";
+string yesImagesFolder = "Images/yes/";
+string meanHistogramsFileName = "Mean Histograms.txt";
 
 
 void ShowAllImages(vector<Mat> images, string dialogTitle)
@@ -50,35 +58,28 @@ vector<Mat> SplitImageToBlocks(Mat sourceImage, int rowsCount, int colsCount)
 	return imageBlocks;
 }
 
-vector<Mat> CalculateImagesHistograms(vector<Mat> images, vector<Mat> &outHists)
+vector<vector<long>> CalculateImagesHistograms(vector<Mat> images)
 {
-	vector<Mat> histograms;
+	vector<vector<long>> histograms;
 
 	for (int imageNumber = 0; imageNumber < images.size(); imageNumber++)
 	{
+		vector<long> histogram(256);
+		
 		int histSize = 256;
-		float range[] = { 0, 256 };
-		const float* histRange = { range };
-		int histWidth = 400;
-		int histHeight = 400;
-		int binWidth = cvRound((double)histWidth / histSize);
+		float range[] = { 0, 255 };
+		const float* ranges[] = { range };
 
-		Mat histogram;
+		MatND hist;
+		auto image = images[imageNumber];
+		calcHist(&image, 1, 0, Mat(), hist, 1, &histSize, ranges, true, false);
 
-		calcHist(&images[imageNumber], 1, 0, Mat(), histogram, 1, &histSize, &histRange, true, false);
-
-		Mat histImage(histHeight, histWidth, CV_8UC3, Scalar(0, 0, 0));
-		normalize(histogram, histogram, 0, histImage.rows, NORM_MINMAX, -1, Mat());
-
-		outHists.push_back(histogram);
-
-		for (int i = 1; i < histSize; i++)
+		for (int h = 0; h < histSize; h++)
 		{
-			line(histImage, Point(binWidth * (i - 1), histHeight - cvRound(histogram.at<float>(i - 1))),
-				Point(binWidth * (i), histHeight - cvRound(histogram.at<float>(i))),
-				Scalar(255, 0, 0), 1, 8, 0);
+			histogram[h] = hist.at<float>(h);
 		}
-		histograms.push_back(histImage);
+
+		histograms.push_back(histogram);
 	}
 	return histograms;
 }
@@ -93,60 +94,112 @@ vector<Mat> diff(vector<Mat> histsWithYes, vector<Mat> histsWithNo) {
 	return result;
 }
 
+vector<vector<int>> createEmptyHistograms(int blocksCount)
+{
+	vector<vector<int>> meanHistograms;
+	for (int i = 0; i < blocksCount; i++)
+	{
+		vector<int> hist;
+		for (int j = 0; j < 256; j++)
+			hist.push_back(0);
+		meanHistograms.push_back(hist);
+	}
+	return meanHistograms;
+}
+
 int main()
 {
-	int rowsCount = 2;
-	int colsCount = 2;
-	Mat sourceImage = imread("no/1 no.jpeg");
-	bool showImageBlocks = false;
-	bool showBlocksHistograms = false;
+	int rowsCount = 8;
+	int colsCount = 8;
+	int blocksCount = rowsCount * colsCount;
+	int imagesCount = 10;
 
+	bool predictImage = true;
+	int predictDiffSize = 1000;
 
-	Mat greyImageWithNo;
-	cvtColor(sourceImage, greyImageWithNo, COLOR_BGR2GRAY);
-
-	vector<Mat> histsWithNo;
-	vector<Mat> imageBlocksWithNo = SplitImageToBlocks(greyImageWithNo, rowsCount, colsCount);
-	vector<Mat> histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo, histsWithNo);
-
-	Mat withYes = imread("yes/Y1.jpg");
-	Mat geyImageWithYes;
-	cvtColor(withYes, geyImageWithYes, COLOR_BGR2GRAY);
-	vector<Mat> histsWithYes;
-	vector<Mat> imageBlocksWithYes = SplitImageToBlocks(geyImageWithYes, rowsCount, colsCount);
-	vector<Mat> histogramsWithYes = CalculateImagesHistograms(imageBlocksWithYes, histsWithYes);
-
-	vector<Mat> difference = diff(histsWithYes, histsWithNo);
-
-	Mat testedImage = imread("yes/Y4.jpg");
-	Mat greyTested;
-	cvtColor(testedImage, greyTested, COLOR_BGR2GRAY);
-
-	vector<Mat> histsTested;
-	vector<Mat> testedBlocks = SplitImageToBlocks(greyTested, rowsCount, colsCount);
-	vector<Mat> testedHistograms = CalculateImagesHistograms(testedBlocks, histsTested);
-
-	int countNonZero = 0;
-	for (int i = 0; i < 4; i++) {
-		Mat out;
-		compare(histsTested[i], difference[i], out, CMP_GT);
-		std::cout << out << "\n\n";
-		countNonZero += cv::countNonZero(out);
-	}
-	std::cout << "Non zero" << countNonZero << "\n\n";
-
-	
-
-	if (showImageBlocks)
+	vector<vector<int>> meanHistograms = createEmptyHistograms(blocksCount);
+	if (!predictImage)
 	{
-		imshow("Source Image", sourceImage);
-		ShowAllImages(imageBlocksWithNo, "Image block");
+		for (int i = 0; i < imagesCount; i++)
+		{
+			Mat sourceImage = imread(noImagesFolder + "/" + to_string(i) + ".jpg", 0);
+			auto imageBlocksWithNo = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+			auto histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo);
+
+			for (int k = 0; k < blocksCount; k++)
+			{
+				for (int j = 0; j < 256; j++)
+				{
+					meanHistograms[k][j] += (histogramsWithNo[k][j] / imagesCount);
+				}
+			}
+		}
+
+
+		ofstream oHistFile;
+		oHistFile.open(meanHistogramsFileName);
+		if (oHistFile.is_open())
+		{
+			oHistFile.clear();
+			for (int k = 0; k < blocksCount; k++)
+			{
+				string line;
+				for (int i = 0; i < 256; i++)
+				{
+					line += (to_string(meanHistograms[k][i]) + " ");
+				}
+				oHistFile << line;
+				oHistFile << "\n";
+			}
+			oHistFile.close();
+		}
 	}
-	if (showBlocksHistograms)
+	else
 	{
-		ShowAllImages(histogramsWithNo, "Histogram");
+		ifstream iHistFile;
+		iHistFile.open(meanHistogramsFileName);
+		if (iHistFile.is_open())
+		{
+			int histNumber = 0;
+			string line;
+			while (getline(iHistFile, line))
+			{
+				vector<int> result;
+				istringstream iss(line);
+				for (string s; iss >> s; )
+					result.push_back(atoi(s.c_str()));
+				meanHistograms[histNumber++] = result;
+			}
+		}
+
+
+		for (int i = 0; i < imagesCount; i++)
+		{
+			Mat sourceImage = imread(yesImagesFolder + "/" + to_string(i) + ".jpg", 0);
+			auto imageBlocksWithNo = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+			auto histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo);
+
+			for (int k = 0; k < blocksCount; k++)
+			{
+				bool withProblem = false;
+				for (int j = 0; j < 256; j++)
+				{
+					int diff = abs(meanHistograms[k][j] - histogramsWithNo[k][j]);
+					if (diff > predictDiffSize) {
+						withProblem = true;
+						break;
+					}
+				}
+				if (withProblem)
+				{
+					cout << "Image #" << i << " has a problem" << endl;
+					break;
+				}
+			}
+			cout << endl;
+		}
 	}
-	
+
 	waitKey(0);
 }
 
