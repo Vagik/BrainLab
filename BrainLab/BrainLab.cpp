@@ -58,13 +58,13 @@ vector<Mat> SplitImageToBlocks(Mat sourceImage, int rowsCount, int colsCount)
 	return imageBlocks;
 }
 
-vector<vector<long>> CalculateImagesHistograms(vector<Mat> images)
+vector<vector<float>> CalculateImagesHistograms(vector<Mat> images)
 {
-	vector<vector<long>> histograms;
+	vector<vector<float>> histograms;
 
 	for (int imageNumber = 0; imageNumber < images.size(); imageNumber++)
 	{
-		vector<long> histogram(256);
+		vector<float> histogram(256);
 		
 		int histSize = 256;
 		float range[] = { 0, 255 };
@@ -94,12 +94,12 @@ vector<Mat> diff(vector<Mat> histsWithYes, vector<Mat> histsWithNo) {
 	return result;
 }
 
-vector<vector<int>> createEmptyHistograms(int blocksCount)
+vector<vector<float>> createEmptyHistograms(int blocksCount)
 {
-	vector<vector<int>> meanHistograms;
+	vector<vector<float>> meanHistograms;
 	for (int i = 0; i < blocksCount; i++)
 	{
-		vector<int> hist;
+		vector<float> hist;
 		for (int j = 0; j < 256; j++)
 			hist.push_back(0);
 		meanHistograms.push_back(hist);
@@ -109,15 +109,15 @@ vector<vector<int>> createEmptyHistograms(int blocksCount)
 
 int main()
 {
-	int rowsCount = 8;
-	int colsCount = 8;
+	int rowsCount = 10;
+	int colsCount = 10;
 	int blocksCount = rowsCount * colsCount;
-	int imagesCount = 10;
+	int imagesCount = 30;
 
 	bool predictImage = true;
-	int predictDiffSize = 1000;
+	int predictDiffSize = 800;
 
-	vector<vector<int>> meanHistograms = createEmptyHistograms(blocksCount);
+	vector<vector<float>> meanHistograms = createEmptyHistograms(blocksCount);
 	if (!predictImage)
 	{
 		for (int i = 0; i < imagesCount; i++)
@@ -164,10 +164,10 @@ int main()
 			string line;
 			while (getline(iHistFile, line))
 			{
-				vector<int> result;
+				vector<float> result;
 				istringstream iss(line);
 				for (string s; iss >> s; )
-					result.push_back(atoi(s.c_str()));
+					result.push_back(stof(s.c_str()));
 				meanHistograms[histNumber++] = result;
 			}
 		}
