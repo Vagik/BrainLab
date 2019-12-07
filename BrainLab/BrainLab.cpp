@@ -107,17 +107,32 @@ vector<vector<float>> createEmptyHistograms(int blocksCount)
 	return meanHistograms;
 }
 
-int main()
+void writeHistogramsToFile(vector<vector<float>> meanHistograms, int blocksCount)
 {
-	int rowsCount = 10;
-	int colsCount = 10;
+	ofstream oHistFile;
+	oHistFile.open(meanHistogramsFileName);
+	if (oHistFile.is_open())
+	{
+		oHistFile.clear();
+		for (int k = 0; k < blocksCount; k++)
+		{
+			string line;
+			for (int i = 0; i < 256; i++)
+			{
+				line += (to_string(meanHistograms[k][i]) + " ");
+			}
+			oHistFile << line;
+			oHistFile << "\n";
+		}
+		oHistFile.close();
+	}
+}
+
+void trainOrPredictMethod(bool predictImage, int imagesCount, int rowsCount, int colsCount, int predictDiffSize)
+{
 	int blocksCount = rowsCount * colsCount;
-	int imagesCount = 30;
-
-	bool predictImage = true;
-	int predictDiffSize = 800;
-
 	vector<vector<float>> meanHistograms = createEmptyHistograms(blocksCount);
+
 	if (!predictImage)
 	{
 		for (int i = 0; i < imagesCount; i++)
@@ -135,24 +150,7 @@ int main()
 			}
 		}
 
-
-		ofstream oHistFile;
-		oHistFile.open(meanHistogramsFileName);
-		if (oHistFile.is_open())
-		{
-			oHistFile.clear();
-			for (int k = 0; k < blocksCount; k++)
-			{
-				string line;
-				for (int i = 0; i < 256; i++)
-				{
-					line += (to_string(meanHistograms[k][i]) + " ");
-				}
-				oHistFile << line;
-				oHistFile << "\n";
-			}
-			oHistFile.close();
-		}
+		writeHistogramsToFile(meanHistograms, blocksCount);
 	}
 	else
 	{
@@ -199,7 +197,128 @@ int main()
 			cout << endl;
 		}
 	}
+}
 
-	waitKey(0);
+int main()
+{
+	const int imagesCount = 30;
+	const bool predictImage = true;
+	
+	int startPredictDiffSize = 100;
+	int finishPredictDiffSize = 1500;
+	int predictDiffStep = 50;
+
+	int startBlocksCountInRow = 2;
+	int finishBlocksCountInRow = 20;
+
+	vector<double> results;
+
+	ofstream oHistFile;
+	oHistFile.open(meanHistogramsFileName);
+	if (oHistFile.is_open())
+	{
+		oHistFile.clear();
+		for (int countInRow = startBlocksCountInRow; countInRow < finishBlocksCountInRow; countInRow++)
+		{
+			oHistFile << "BLOCKS NUMBER IN A ROW = " << countInRow << "\n";
+
+			int rowsCount = countInRow;
+			int colsCount = countInRow;
+			int blocksCount = rowsCount * colsCount;
+
+			vector<vector<float>> meanHistograms = createEmptyHistograms(blocksCount);
+
+			// Train
+			for (int i = 0; i < imagesCount; i++)
+			{
+				Mat sourceImage = imread(noImagesFolder + "/" + to_string(i) + ".jpg", 0);
+				auto imageBlocksWithNo = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+				auto histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo);
+
+				for (int k = 0; k < blocksCount; k++)
+				{
+					for (int j = 0; j < 256; j++)
+					{
+						meanHistograms[k][j] += (histogramsWithNo[k][j] / imagesCount);
+					}
+				}
+			}
+
+
+			// Predict
+			for (int predictDiffSize = startPredictDiffSize; predictDiffSize < finishPredictDiffSize; predictDiffSize += predictDiffStep)
+			{
+				int correctYesPredictions = 0;
+				for (int i = 0; i < imagesCount; i++)
+				{
+					Mat sourceImage = imread(yesImagesFolder + "/" + to_string(i) + ".jpg", 0);
+					auto imageBlocksWithYes = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+					auto histogramsWithYes = CalculateImagesHistograms(imageBlocksWithYes);
+
+					for (int k = 0; k < blocksCount; k++)
+					{
+						bool withProblem = false;
+						for (int j = 0; j < 256; j++)
+						{
+							int diff = abs(meanHistograms[k][j] - histogramsWithYes[k][j]);
+							if (diff > predictDiffSize)
+							{
+								correctYesPredictions++;
+								withProblem = true;
+								break;
+							}
+						}
+						if (withProblem)
+						{
+							break;
+						}
+					}
+				}
+
+				int incorrectNoPredictions = 0;
+				for (int i = 0; i < imagesCount; i++)
+				{
+					Mat sourceImage = imread(noImagesFolder + "/" + to_string(i) + ".jpg", 0);
+					auto imageBlocksWithNo = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+					auto histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo);
+
+					for (int k = 0; k < blocksCount; k++)
+					{
+						bool withProblem = false;
+						for (int j = 0; j < 256; j++)
+						{
+							int diff = abs(meanHistograms[k][j] - histogramsWithNo[k][j]);
+							if (diff > predictDiffSize)
+							{
+								incorrectNoPredictions++;
+								withProblem = true;
+								break;
+							}
+						}
+						if (withProblem)
+						{
+							break;
+						}
+					}
+				}
+				int correctNoPredictions = imagesCount - incorrectNoPredictions;
+
+				double result = ((double)(correctYesPredictions + correctNoPredictions) / (double)(2 * imagesCount));
+				results.push_back(result);
+				oHistFile << "Prediction diff value = " << predictDiffSize << "; Prediction result = " << result << "\n";
+			}
+			oHistFile << "---------------------------------------------------------------------------\n\n";
+		}
+
+		double max = 0;
+		for (int i = 0; i < results.size(); i++)
+		{
+			if (results[i] > max) {
+				max = results[i];
+			}
+		}
+		oHistFile << "THE BEST PREDICTION RESULT: " << max << "\n";
+	}
+	oHistFile.close();
 }
 
