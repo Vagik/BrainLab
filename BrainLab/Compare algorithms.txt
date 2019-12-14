@@ -1,0 +1,25 @@
+IMAGES NUMBER = 20
+Hough algorithm time: 699ms
+Histograms algorithm time: 207ms
+-----------------------------------------------------
+
+IMAGES NUMBER = 40
+Hough algorithm time: 1358ms
+Histograms algorithm time: 412ms
+-----------------------------------------------------
+
+IMAGES NUMBER = 60
+Hough algorithm time: 2761ms
+Histograms algorithm time: 578ms
+-----------------------------------------------------
+
+IMAGES NUMBER = 80
+Hough algorithm time: 12040ms
+Histograms algorithm time: 954ms
+-----------------------------------------------------
+
+IMAGES NUMBER = 100
+Hough algorithm time: 13907ms
+Histograms algorithm time: 989ms
+-----------------------------------------------------
+

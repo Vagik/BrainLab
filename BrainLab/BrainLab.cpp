@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
+#include <ctime>
 
 using namespace std;
 using namespace cv;
@@ -215,6 +216,7 @@ void makeExperiencesForHistogramsAlgorightm(int imagesCount)
 	if (oHistFile.is_open())
 	{
 		oHistFile.clear();
+		oHistFile << "IMAGES NUMBER = " << 2 * imagesCount << "\n" << endl << endl;
 		for (int countInRow = startBlocksCountInRow; countInRow < finishBlocksCountInRow; countInRow++)
 		{
 			oHistFile << "BLOCKS NUMBER IN A ROW = " << countInRow << "\n";
@@ -327,7 +329,7 @@ void makeExpiriencesForHoughAlgorithm(int imagesCount)
 	if (oHoughFile.is_open())
 	{
 		oHoughFile.clear();
-		oHoughFile << "IMAGES NUMBER = " << imagesCount << endl << endl;
+		oHoughFile << "IMAGES NUMBER = " << 2 * imagesCount << endl << endl;
 		Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5), Point(2, 2));
 		int thresholdMin = 150;
 		double maxDetectionPercent = 0;
@@ -406,18 +408,180 @@ void makeExpiriencesForHoughAlgorithm(int imagesCount)
 				oHoughFile << "Detection percent: " << detectionPercent << "%" << endl;
 				oHoughFile << "----------------------------------------------------" << endl << endl;
 			}
-
 		}
 		oHoughFile << endl << "MAXIMUM DETECTION PERCENT: " << maxDetectionPercent << "%" << endl;
 	}
 	oHoughFile.close();
 }
 
+
+void compareTwoAlgorithms()
+{
+	ofstream oCompareFile;
+	oCompareFile.open("Compare algorithms.txt");
+	if (oCompareFile.is_open())
+	{
+		oCompareFile.clear();
+		for (int imagesCount = 10; imagesCount <= 50; imagesCount += 10)
+		{
+			oCompareFile << "IMAGES NUMBER = " << 2 * imagesCount << endl;
+
+			long startTime = clock();
+			Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5), Point(2, 2));
+			int noDetected = 0;
+			for (int i = 0; i < imagesCount; i++)
+			{
+				Mat sourceImage = imread(noImagesFolder + "/" + to_string(i) + ".jpg");
+				Mat gray;
+				cvtColor(sourceImage, gray, COLOR_BGR2GRAY);
+				threshold(gray, gray, 160, 255, THRESH_BINARY);
+				erode(gray, gray, element);
+
+				vector<Vec3f> circles;
+				HoughCircles
+				(
+					gray,              // source image
+					circles,           // circles
+					HOUGH_GRADIENT,    // method
+					1,                 // inverse ratio of resolution
+					255,               // min distance between centers
+					150,               // Canny upper threshold
+					10,                // threshold for center detection
+					gray.cols / 20,    // minimum radius
+					gray.cols / 5      // maximum radius
+				);
+
+				if (circles.size() > 0)
+				{
+					noDetected++;
+				}
+			}
+
+			int yesDetected = 0;
+			for (int i = 0; i < imagesCount; i++)
+			{
+				Mat sourceImage = imread(yesImagesFolder + "/" + to_string(i) + ".jpg");
+				Mat gray;
+				cvtColor(sourceImage, gray, COLOR_BGR2GRAY);
+				threshold(gray, gray, 160, 255, THRESH_BINARY);
+				erode(gray, gray, element);
+
+				vector<Vec3f> circles;
+				HoughCircles
+				(
+					gray,              // source image
+					circles,           // circles
+					HOUGH_GRADIENT,    // method
+					1,                 // inverse ratio of resolution
+					255,               // min distance between centers
+					150,               // Canny upper threshold
+					10,                // threshold for center detection
+					gray.cols / 20,    // minimum radius
+					gray.cols / 5      // maximum radius
+				);
+
+				if (circles.size() > 0)
+				{
+					yesDetected++;
+				}
+			}
+			int endTime = clock();
+
+			oCompareFile << "Hough algorithm time: " << endTime - startTime << "ms" << endl;
+
+			int rowsCount = 9;
+			int colsCount = 9;
+			int blocksCount = rowsCount * colsCount;
+			vector<vector<float>> meanHistograms = createEmptyHistograms(blocksCount);
+
+			startTime = clock();
+			for (int i = 0; i < imagesCount; i++)
+			{
+				Mat sourceImage = imread(noImagesFolder + "/" + to_string(i) + ".jpg", 0);
+				auto imageBlocksWithNo = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+				auto histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo);
+
+				for (int k = 0; k < blocksCount; k++)
+				{
+					for (int j = 0; j < 256; j++)
+					{
+						meanHistograms[k][j] += (histogramsWithNo[k][j] / imagesCount);
+					}
+				}
+			}
+
+			int correctYesPredictions = 0;
+			for (int i = 0; i < imagesCount; i++)
+			{
+				Mat sourceImage = imread(yesImagesFolder + "/" + to_string(i) + ".jpg", 0);
+				auto imageBlocksWithYes = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+				auto histogramsWithYes = CalculateImagesHistograms(imageBlocksWithYes);
+
+				for (int k = 0; k < blocksCount; k++)
+				{
+					bool withProblem = false;
+					for (int j = 0; j < 256; j++)
+					{
+						int diff = abs(meanHistograms[k][j] - histogramsWithYes[k][j]);
+						if (diff > 650)
+						{
+							correctYesPredictions++;
+							withProblem = true;
+							break;
+						}
+					}
+					if (withProblem)
+					{
+						break;
+					}
+				}
+			}
+
+			int incorrectNoPredictions = 0;
+			for (int i = 0; i < imagesCount; i++)
+			{
+				Mat sourceImage = imread(noImagesFolder + "/" + to_string(i) + ".jpg", 0);
+				auto imageBlocksWithNo = SplitImageToBlocks(sourceImage, rowsCount, colsCount);
+				auto histogramsWithNo = CalculateImagesHistograms(imageBlocksWithNo);
+
+				for (int k = 0; k < blocksCount; k++)
+				{
+					bool withProblem = false;
+					for (int j = 0; j < 256; j++)
+					{
+						int diff = abs(meanHistograms[k][j] - histogramsWithNo[k][j]);
+						if (diff > 650)
+						{
+							incorrectNoPredictions++;
+							withProblem = true;
+							break;
+						}
+					}
+					if (withProblem)
+					{
+						break;
+					}
+				}
+			}
+			int correctNoPredictions = imagesCount - incorrectNoPredictions;
+			endTime = clock();
+
+			oCompareFile << "Histograms algorithm time: " << endTime - startTime << "ms" << endl;
+			oCompareFile << "-----------------------------------------------------" << endl << endl;
+		}
+	}
+	oCompareFile.close();
+}
+
+
 int main()
 {
-	const int imagesCount = 50;
-	const bool predictImage = true;
-	
+	const int imagesCount = 50;	
+
+	//makeExpiriencesForHoughAlgorithm(imagesCount);
+	//makeExperiencesForHistogramsAlgorightm(imagesCount);
+	//compareTwoAlgorithms();
+
 
 	Mat sourceImage = imread(yesImagesFolder + "/" + "13" + ".jpg");
 	Mat resultImage = imread(yesImagesFolder + "/" + "13" + ".jpg");
