@@ -199,11 +199,8 @@ void trainOrPredictMethod(bool predictImage, int imagesCount, int rowsCount, int
 	}
 }
 
-int main()
+void makeExperiencesForHistogramsAlgorightm(int imagesCount)
 {
-	const int imagesCount = 30;
-	const bool predictImage = true;
-	
 	int startPredictDiffSize = 100;
 	int finishPredictDiffSize = 1500;
 	int predictDiffStep = 50;
@@ -320,5 +317,144 @@ int main()
 		oHistFile << "THE BEST PREDICTION RESULT: " << max << "\n";
 	}
 	oHistFile.close();
+}
+
+
+void makeExpiriencesForHoughAlgorithm(int imagesCount)
+{
+	ofstream oHoughFile;
+	oHoughFile.open("Hough Detection.txt");
+	if (oHoughFile.is_open())
+	{
+		oHoughFile.clear();
+		oHoughFile << "IMAGES NUMBER = " << imagesCount << endl << endl;
+		Mat element = getStructuringElement(MORPH_ELLIPSE, Size(5, 5), Point(2, 2));
+		int thresholdMin = 150;
+		double maxDetectionPercent = 0;
+
+		for (int rad = 3; rad < 8; rad++)
+		{
+			for (int th = thresholdMin; th < 245; th += 10)
+			{
+				int noDetected = 0;
+				for (int i = 0; i < imagesCount; i++)
+				{
+					Mat sourceImage = imread(noImagesFolder + "/" + to_string(i) + ".jpg");
+					Mat gray;
+					cvtColor(sourceImage, gray, COLOR_BGR2GRAY);
+					threshold(gray, gray, th, 255, THRESH_BINARY);
+					erode(gray, gray, element);
+
+					vector<Vec3f> circles;
+					HoughCircles
+					(
+						gray,              // source image
+						circles,           // circles
+						HOUGH_GRADIENT,    // method
+						1,                 // inverse ratio of resolution
+						255,               // min distance between centers
+						150,               // Canny upper threshold
+						10,                // threshold for center detection
+						gray.cols / 20,    // minimum radius
+						gray.cols / rad      // maximum radius
+					);
+
+					if (circles.size() > 0)
+					{
+						noDetected++;
+					}
+				}
+
+				int yesDetected = 0;
+				for (int i = 0; i < imagesCount; i++)
+				{
+					Mat sourceImage = imread(yesImagesFolder + "/" + to_string(i) + ".jpg");
+					Mat gray;
+					cvtColor(sourceImage, gray, COLOR_BGR2GRAY);
+					threshold(gray, gray, th, 255, THRESH_BINARY);
+					erode(gray, gray, element);
+
+					vector<Vec3f> circles;
+					HoughCircles
+					(
+						gray,              // source image
+						circles,           // circles
+						HOUGH_GRADIENT,    // method
+						1,                 // inverse ratio of resolution
+						255,               // min distance between centers
+						150,               // Canny upper threshold
+						10,                // threshold for center detection
+						gray.cols / 20,    // minimum radius
+						gray.cols / rad      // maximum radius
+					);
+
+					if (circles.size() > 0)
+					{
+						yesDetected++;
+					}
+				}
+
+				double detectionPercent = (imagesCount - noDetected + yesDetected) / (2.0 * imagesCount) * 100;
+				if (detectionPercent > maxDetectionPercent)
+				{
+					maxDetectionPercent = detectionPercent;
+				}
+				oHoughFile << "Threshold value = " << th << endl;
+				oHoughFile << "Max radius coefficient = " << rad << endl;
+				oHoughFile << "Without problems correcte detected: " << imagesCount - noDetected << endl;
+				oHoughFile << "With problems correcte detected: " << yesDetected << endl;
+				oHoughFile << "Detection percent: " << detectionPercent << "%" << endl;
+				oHoughFile << "----------------------------------------------------" << endl << endl;
+			}
+
+		}
+		oHoughFile << endl << "MAXIMUM DETECTION PERCENT: " << maxDetectionPercent << "%" << endl;
+	}
+	oHoughFile.close();
+}
+
+int main()
+{
+	const int imagesCount = 50;
+	const bool predictImage = true;
+	
+
+	Mat sourceImage = imread(yesImagesFolder + "/" + "13" + ".jpg");
+	Mat resultImage = imread(yesImagesFolder + "/" + "13" + ".jpg");
+	Mat gray;
+	cvtColor(sourceImage, gray, COLOR_BGR2GRAY);
+	threshold(gray, gray, 180, 255, THRESH_BINARY);
+	Mat erodeMat;
+	Mat kernel = getStructuringElement(MORPH_CROSS, Size(5, 5), Point(2, 2));
+	erode(gray, erodeMat, kernel);
+
+	vector<Vec3f> circles;
+	HoughCircles
+	(
+		erodeMat,              // source image
+		circles,           // circles
+		HOUGH_GRADIENT,    // method
+		1,                 // inverse ratio of resolution
+		255,     // min distance between centers
+		150,               // Canny upper threshold
+		10,               // threshold for center detection
+		erodeMat.cols / 20,    // minimum radius
+		erodeMat.cols / 6      // maximum radius
+	);
+
+	for (int i = 0; i < circles.size(); i++)
+	{
+		Vec3i c = circles[i];
+		Point center = Point(c[0], c[1]);
+		circle(resultImage, center, 1, Scalar(0, 100, 100), 3, LINE_AA);
+		int radius = c[2];
+		circle(resultImage, center, radius, Scalar(255, 0, 255), 3, LINE_AA);
+	};
+
+	imshow("Source Image", sourceImage);
+	imshow("Threshold", gray);
+	imshow("Erode", erodeMat);
+	imshow("Hough", resultImage);
+	waitKey(0);
 }
 

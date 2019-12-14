@@ -1,0 +1,354 @@
+IMAGES NUMBER = 50
+
+Threshold value = 150
+Max radius coefficient = 3
+Without problems correct detected: 28
+With problems correct detected: 47
+Detection percent: 75%
+----------------------------------------------------
+
+Threshold value = 160
+Max radius coefficient = 3
+Without problems correct detected: 29
+With problems correct detected: 46
+Detection percent: 75%
+----------------------------------------------------
+
+Threshold value = 170
+Max radius coefficient = 3
+Without problems correct detected: 35
+With problems correct detected: 43
+Detection percent: 78%
+----------------------------------------------------
+
+Threshold value = 180
+Max radius coefficient = 3
+Without problems correct detected: 37
+With problems correct detected: 38
+Detection percent: 75%
+----------------------------------------------------
+
+Threshold value = 190
+Max radius coefficient = 3
+Without problems correct detected: 39
+With problems correct detected: 37
+Detection percent: 76%
+----------------------------------------------------
+
+Threshold value = 200
+Max radius coefficient = 3
+Without problems correct detected: 40
+With problems correct detected: 31
+Detection percent: 71%
+----------------------------------------------------
+
+Threshold value = 210
+Max radius coefficient = 3
+Without problems correct detected: 42
+With problems correct detected: 29
+Detection percent: 71%
+----------------------------------------------------
+
+Threshold value = 220
+Max radius coefficient = 3
+Without problems correct detected: 44
+With problems correct detected: 26
+Detection percent: 70%
+----------------------------------------------------
+
+Threshold value = 230
+Max radius coefficient = 3
+Without problems correct detected: 48
+With problems correct detected: 23
+Detection percent: 71%
+----------------------------------------------------
+
+Threshold value = 240
+Max radius coefficient = 3
+Without problems correct detected: 48
+With problems correct detected: 17
+Detection percent: 65%
+----------------------------------------------------
+
+Threshold value = 150
+Max radius coefficient = 4
+Without problems correct detected: 32
+With problems correct detected: 46
+Detection percent: 78%
+----------------------------------------------------
+
+Threshold value = 160
+Max radius coefficient = 4
+Without problems correct detected: 33
+With problems correct detected: 44
+Detection percent: 77%
+----------------------------------------------------
+
+Threshold value = 170
+Max radius coefficient = 4
+Without problems correct detected: 36
+With problems correct detected: 41
+Detection percent: 77%
+----------------------------------------------------
+
+Threshold value = 180
+Max radius coefficient = 4
+Without problems correct detected: 38
+With problems correct detected: 37
+Detection percent: 75%
+----------------------------------------------------
+
+Threshold value = 190
+Max radius coefficient = 4
+Without problems correct detected: 40
+With problems correct detected: 34
+Detection percent: 74%
+----------------------------------------------------
+
+Threshold value = 200
+Max radius coefficient = 4
+Without problems correct detected: 41
+With problems correct detected: 28
+Detection percent: 69%
+----------------------------------------------------
+
+Threshold value = 210
+Max radius coefficient = 4
+Without problems correct detected: 43
+With problems correct detected: 28
+Detection percent: 71%
+----------------------------------------------------
+
+Threshold value = 220
+Max radius coefficient = 4
+Without problems correct detected: 44
+With problems correct detected: 24
+Detection percent: 68%
+----------------------------------------------------
+
+Threshold value = 230
+Max radius coefficient = 4
+Without problems correct detected: 48
+With problems correct detected: 17
+Detection percent: 65%
+----------------------------------------------------
+
+Threshold value = 240
+Max radius coefficient = 4
+Without problems correct detected: 48
+With problems correct detected: 15
+Detection percent: 63%
+----------------------------------------------------
+
+Threshold value = 150
+Max radius coefficient = 5
+Without problems correct detected: 32
+With problems correct detected: 45
+Detection percent: 77%
+----------------------------------------------------
+
+Threshold value = 160
+Max radius coefficient = 5
+Without problems correct detected: 37
+With problems correct detected: 43
+Detection percent: 80%
+----------------------------------------------------
+
+Threshold value = 170
+Max radius coefficient = 5
+Without problems correct detected: 38
+With problems correct detected: 37
+Detection percent: 75%
+----------------------------------------------------
+
+Threshold value = 180
+Max radius coefficient = 5
+Without problems correct detected: 41
+With problems correct detected: 36
+Detection percent: 77%
+----------------------------------------------------
+
+Threshold value = 190
+Max radius coefficient = 5
+Without problems correct detected: 43
+With problems correct detected: 33
+Detection percent: 76%
+----------------------------------------------------
+
+Threshold value = 200
+Max radius coefficient = 5
+Without problems correct detected: 42
+With problems correct detected: 27
+Detection percent: 69%
+----------------------------------------------------
+
+Threshold value = 210
+Max radius coefficient = 5
+Without problems correct detected: 45
+With problems correct detected: 26
+Detection percent: 71%
+----------------------------------------------------
+
+Threshold value = 220
+Max radius coefficient = 5
+Without problems correct detected: 45
+With problems correct detected: 18
+Detection percent: 63%
+----------------------------------------------------
+
+Threshold value = 230
+Max radius coefficient = 5
+Without problems correct detected: 48
+With problems correct detected: 16
+Detection percent: 64%
+----------------------------------------------------
+
+Threshold value = 240
+Max radius coefficient = 5
+Without problems correct detected: 49
+With problems correct detected: 14
+Detection percent: 63%
+----------------------------------------------------
+
+Threshold value = 150
+Max radius coefficient = 6
+Without problems correct detected: 36
+With problems correct detected: 43
+Detection percent: 79%
+----------------------------------------------------
+
+Threshold value = 160
+Max radius coefficient = 6
+Without problems correct detected: 38
+With problems correct detected: 41
+Detection percent: 79%
+----------------------------------------------------
+
+Threshold value = 170
+Max radius coefficient = 6
+Without problems correct detected: 41
+With problems correct detected: 34
+Detection percent: 75%
+----------------------------------------------------
+
+Threshold value = 180
+Max radius coefficient = 6
+Without problems correct detected: 44
+With problems correct detected: 33
+Detection percent: 77%
+----------------------------------------------------
+
+Threshold value = 190
+Max radius coefficient = 6
+Without problems correct detected: 43
+With problems correct detected: 31
+Detection percent: 74%
+----------------------------------------------------
+
+Threshold value = 200
+Max radius coefficient = 6
+Without problems correct detected: 44
+With problems correct detected: 23
+Detection percent: 67%
+----------------------------------------------------
+
+Threshold value = 210
+Max radius coefficient = 6
+Without problems correct detected: 48
+With problems correct detected: 24
+Detection percent: 72%
+----------------------------------------------------
+
+Threshold value = 220
+Max radius coefficient = 6
+Without problems correct detected: 46
+With problems correct detected: 16
+Detection percent: 62%
+----------------------------------------------------
+
+Threshold value = 230
+Max radius coefficient = 6
+Without problems correct detected: 50
+With problems correct detected: 12
+Detection percent: 62%
+----------------------------------------------------
+
+Threshold value = 240
+Max radius coefficient = 6
+Without problems correct detected: 50
+With problems correct detected: 11
+Detection percent: 61%
+----------------------------------------------------
+
+Threshold value = 150
+Max radius coefficient = 7
+Without problems correct detected: 40
+With problems correct detected: 39
+Detection percent: 79%
+----------------------------------------------------
+
+Threshold value = 160
+Max radius coefficient = 7
+Without problems correct detected: 40
+With problems correct detected: 38
+Detection percent: 78%
+----------------------------------------------------
+
+Threshold value = 170
+Max radius coefficient = 7
+Without problems correct detected: 43
+With problems correct detected: 34
+Detection percent: 77%
+----------------------------------------------------
+
+Threshold value = 180
+Max radius coefficient = 7
+Without problems correct detected: 45
+With problems correct detected: 30
+Detection percent: 75%
+----------------------------------------------------
+
+Threshold value = 190
+Max radius coefficient = 7
+Without problems correct detected: 46
+With problems correct detected: 25
+Detection percent: 71%
+----------------------------------------------------
+
+Threshold value = 200
+Max radius coefficient = 7
+Without problems correct detected: 47
+With problems correct detected: 23
+Detection percent: 70%
+----------------------------------------------------
+
+Threshold value = 210
+Max radius coefficient = 7
+Without problems correct detected: 48
+With problems correct detected: 19
+Detection percent: 67%
+----------------------------------------------------
+
+Threshold value = 220
+Max radius coefficient = 7
+Without problems correct detected: 48
+With problems correct detected: 15
+Detection percent: 63%
+----------------------------------------------------
+
+Threshold value = 230
+Max radius coefficient = 7
+Without problems correct detected: 50
+With problems correct detected: 12
+Detection percent: 62%
+----------------------------------------------------
+
+Threshold value = 240
+Max radius coefficient = 7
+Without problems correct detected: 50
+With problems correct detected: 10
+Detection percent: 60%
+----------------------------------------------------
+
+
+MAXIMUM DETECTION PERCENT: 80%
